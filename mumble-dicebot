@@ -183,6 +183,7 @@ while (true)
       $names[msg.session] = msg.name
     end
   when 11 # TextMessage
+    $channel = msg.channel_id
     if (msg.message =~ /^#{$COMMAND}\s*help\s*$/) # !roll help
       # show help
       socket.write(msg_text($HELP_TEXT,[msg.actor]))
