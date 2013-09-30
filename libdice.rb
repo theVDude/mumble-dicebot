@@ -45,10 +45,15 @@ def checkdice(dice,hard)
     wins += 1  if d.to_i >= hard
     wins -= 1  if d.to_i == 1 unless hard == 1
   end
-  "[#{wins} successes]" if (wins>1||wins==0)
-  "[#{wins} success]" if (wins==1)
-  "[#{wins*-1} botches]" if (wins<-1)
-  "[#{wins*-1} botch]" if (wins==-1)
+  if wins > 1 || wins == 0
+    "[#{wins} successes]"
+  elsif wins == 1
+    "[#{wins} success]"
+  elsif wins == -1
+    "[#{wins * -1} botch]"
+  else
+    "[#{wins * -1} botches]"
+  end
 end
 
 def substitute(str)
