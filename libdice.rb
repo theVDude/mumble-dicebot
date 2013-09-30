@@ -1,3 +1,5 @@
+require 'pry'
+
 $MAX_DICE = 2**8
 $MAX_DIESIZE = 2**32
 $NO_LIMITS = false
@@ -19,6 +21,9 @@ class Die
   def to_s
     @face.to_s
   end
+  def to_i
+    @face.to_i
+  end
 end
 
 class DX < Die
@@ -34,14 +39,27 @@ class DFudge < Die
   end
 end
 
+def checkdice(dice,hard)
+  wins = 0
+  dice.each do |d|
+    wins += 1  if d.to_i >= hard
+    wins -= 1  if d.to_i == 1
+  end
+  wins>=0 ? "[#{wins} successes]" : "[#{wins * -1} botches]"
+end
+
 def substitute(str)
-  str.gsub!(/(\d*)(d|D)(\d+|F)/) do |m| #[m]d<n> or [m]dF
+  str.gsub!(/(\d*)(d|D)(\d+)~?(\d+)?/) do |m| #[m]d<n> or [m]dF
     dice = []
     ($1.empty? ? 1 : $1.to_i).times do
-      dice.push ($3 == "F" ? DFudge.new : DX.new($3.to_i))
+      dice.push (DX.new($3.to_i))
       raise ArgumentError, "Too many dice/tokens. Maximum allowed: #{$MAX_DICE}." if (dice.length > $MAX_DICE) unless $NO_LIMITS
     end
+    $4.nil? ? hard = 6 : hard = $4.to_i
+    successes = checkdice(dice,hard)
+    dice.push(successes)
     dice.join(" ")
   end
   str
 end
+

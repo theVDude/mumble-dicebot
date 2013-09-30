@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 $: << File.expand_path(File.dirname(__FILE__))
 
+require 'pry'
 require 'getoptlong'
 require 'socket'
 require 'openssl'
@@ -186,7 +187,7 @@ while (true)
     $channel = msg.channel_id
     if (msg.message =~ /^#{$COMMAND}\s*help\s*$/) # !roll help
       # show help
-      socket.write(msg_text($HELP_TEXT,[msg.actor]))
+      # socket.write(msg_text($HELP_TEXT,[msg.actor]))
     elsif (msg.message =~ /^#{$COMMAND}\s+(.*)\s*$/) # !roll ...
       # roll dice
       begin
