@@ -5,11 +5,11 @@ $MAX_DIESIZE = 2**32
 $NO_LIMITS = false
 
 def get_helptext(command=$0)
-  sample = "Wildcard: d6 d10  Extras: 4d6"
+  sample = "Punch guy: 4d10  Don't blow up: 1d10~10"
     <<-EOF
 Syntax: #{command} <input>
 
-The <input> will be filtered and any occurences of "[m]d<n>" will be replaced by rolled dice numbers. [m] is optional and defaults to 1.
+The <input> will be filtered and any occurences of "[m]d<n>[~diff]" will be replaced by rolled dice numbers. [m] is optional and defaults to 1. [~diff] is difficulty and defaults to 6.
 
 Example:             "#{command} #{sample}"
   might evaluate to  "#{substitute(sample.dup)}"
@@ -43,13 +43,16 @@ def checkdice(dice,hard)
   wins = 0
   dice.each do |d|
     wins += 1  if d.to_i >= hard
-    wins -= 1  if d.to_i == 1
+    wins -= 1  if d.to_i == 1 unless hard == 1
   end
-  wins>=0 ? "[#{wins} successes]" : "[#{wins * -1} botches]"
+  "[#{wins} successes]" if (wins>1||wins==0)
+  "[#{wins} success]" if (wins==1)
+  "[#{wins*-1} botches]" if (wins<-1)
+  "[#{wins*-1} botch]" if (wins==-1)
 end
 
 def substitute(str)
-  str.gsub!(/(\d*)(d|D)(\d+)~?(\d+)?/) do |m| #[m]d<n> or [m]dF
+  str.gsub!(/(\d*)(d|D)(\d+)~?(\d+)?/) do |m|
     dice = []
     ($1.empty? ? 1 : $1.to_i).times do
       dice.push (DX.new($3.to_i))
