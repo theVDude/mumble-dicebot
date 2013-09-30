@@ -125,7 +125,7 @@ def msg_text(str,users=nil)
   if (users)
     m.session = users
   else
-    m.channel_id = [$channel]
+    m.channel_id = $channel
   end
   return pack(m,11)
 end
