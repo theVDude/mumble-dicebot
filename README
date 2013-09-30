@@ -10,10 +10,16 @@ Mumble.proto and replace msg.rb with the resulting file.
 
 
 Developed for Ruby 1.9.3.
-
+Made to work with Ruby 2.0.0
 
 For the parameter list, run  $ mumble-dicebot -h
 
 As of now, the script has to be aborted manually (CTRL-C). This should
 automatically disconnect the bot. (Otherwise, the server will kick it
 after half a minute or so of ping silence.)
+
+---
+
+I'm currently working on separating out the dice parts from the bot parts
+so that I can extend the functionality beyond just dicerolls. First up is
+getting it to do V20 rolls and list successes.
