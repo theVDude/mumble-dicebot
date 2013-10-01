@@ -5,38 +5,17 @@ $MAX_DIESIZE = 2**32
 $NO_LIMITS = false
 
 def get_helptext(command=$0)
-  case command
-  when 'roll'
-    sample = "Punch guy: 4d10  Don't blow up: 1d10~10"
+    sample = "Punch guy: 4d10  Don't blow up: d10~10" if command == 'roll'
+    sample = "No botches here: 6d3~2" if command == 'nobotch'
+    sample = "10s count double: 10d10" if command == 'special'
     <<-EOF
 Syntax: #{$COMMAND}#{command} <input>
 
-The <input> will be filtered and any occurences of "[m]d<n>[~diff]" will be replaced by rolled dice numbers. [m] is optional and defaults to 1. [~diff] is difficulty and defaults to 6.
+The <input> will be filtered and any occurences of "[m]d<n>[~diff]" will be replaced by rolled dice numbers. [m] is optional and defaults to 1. [~diff] is difficulty and defaults to 6. #{"1s will not count against your successes." if command == 'nobotch'}#{"10s count as double successes, use when you have a specialty." if command == 'special'}
 
 Example:             "#{$COMMAND}#{command} #{sample}"
   might evaluate to  "#{substitute(sample.dup,command)}"
 EOF
-  when 'nobotch'
-    sample = "No botches: 5d3~2"
-    <<-EOF
-Syntax: #{$COMMAND}#{command} <input>
-
-The <input> will be filtered and any occurences of "[m]d<n>[~diff]" will be replaced by rolled dice numbers. [m] is optional and defaults to 1. [~diff] is difficulty and defaults to 6. 1s will not count against your successes.
-
-Example:             "#{$COMMAND}#{command} #{sample}"
-  might evaluate to  "#{substitute(sample.dup,command)}"
-EOF
-  when 'special'
-    sample = "So many dice: 10d10"
-    <<-EOF
-Syntax: #{$COMMAND}#{command} <input>
-
-The <input> will be filtered and any occurences of "[m]d<n>[~diff]" will be replaced by rolled dice numbers. [m] is optional and defaults to 1. [~diff] is difficulty and defaults to 6. 10s count as double successes, use this when you have a speciality.
-
-Example:             "#{$COMMAND}#{command} #{sample}"
-  might evaluate to  "#{substitute(sample.dup,command)}"
-EOF
-  end
 end  
 
 class Die
