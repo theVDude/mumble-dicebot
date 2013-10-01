@@ -8,7 +8,7 @@ require 'openssl'
 require 'cgi'
 require 'msg'
 require 'libdice'
-
+require 'botcommands'
 
 ################################################################################
 ## Constants
@@ -27,9 +27,13 @@ $HOST = 'localhost'
 $PORT = 64738
 $USER = 'dicebot'
 $PASS = ''
-$COMMAND = '!roll'
+$COMMAND = '!'
 $PING_INTERVAL = 15
 $VERBOSE = false
+$ROLL = "#{$COMMAND}roll"
+$SPECIAL = "#{$COMMAND}special"
+$NOBOTCH = "#{$COMMAND}nobotch"
+$HELP = "#{$COMMAND}help"
 
 ## Options #####################################################################
 
@@ -66,8 +70,10 @@ end
 $HOST = ARGV[0] if ARGV[0]
 $PORT = ARGV[1] if ARGV[1]
 
-$WELCOME_TEXT = "Want me to roll some dice? Type <b>#{$COMMAND} help</b> or see my comment for details."
-$HELP_TEXT = CGI.escapeHTML(get_helptext($COMMAND)).strip.gsub(/\n\n/,'<br/><br/>')
+$WELCOME_TEXT = "Want me to roll some dice? Type <b>#{$ROLL} help</b> or see my comment for details."
+def HELP_TEXT(command)
+  CGI.escapeHTML(get_helptext(command)).strip.gsub(/\n\n/,'<br/><br/>')
+end
 
 
 ################################################################################
@@ -116,7 +122,7 @@ def msg_deafmute
   m = MumbleProto::UserState.new
   m.self_mute = true
   m.self_deaf = true
-  m.comment = $HELP_TEXT
+  m.comment = HELP_TEXT('roll')
   return pack(m,9)
 end
 
@@ -130,7 +136,6 @@ def msg_text(str,users=nil)
   end
   return pack(m,11)
 end
-
 
 ################################################################################
 ## Main
@@ -185,15 +190,11 @@ while (true)
     end
   when 11 # TextMessage
     $channel = msg.channel_id
-    if (msg.message =~ /^#{$COMMAND}\s*help\s*$/) # !roll help
-      # show help
-      socket.write(msg_text($HELP_TEXT,[msg.actor]))
-    elsif (msg.message =~ /^#{$COMMAND}\s+(.*)\s*$/) # !roll ...
-      # roll dice
-      begin
-        socket.write(msg_text("<b>#{$names[msg.actor]}</b>: #{substitute($1)}"))
-      rescue ArgumentError => e
-        socket.write(msg_text("<b>Error</b>: #{e}</b>",[msg.actor]))
+    if (msg.message =~ /^#{$COMMAND}/)
+      if (msg.message =~ /^#{$COMMAND}\w+\shelp/)
+        socket.write(msg_text("#{getcommand(msg)}",[msg.actor]))
+      else
+        socket.write(msg_text("#{getcommand(msg)}"))
       end
     end
   end

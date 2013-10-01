@@ -5,15 +5,38 @@ $MAX_DIESIZE = 2**32
 $NO_LIMITS = false
 
 def get_helptext(command=$0)
-  sample = "Punch guy: 4d10  Don't blow up: 1d10~10"
+  case command
+  when 'roll'
+    sample = "Punch guy: 4d10  Don't blow up: 1d10~10"
     <<-EOF
-Syntax: #{command} <input>
+Syntax: #{$COMMAND}#{command} <input>
 
 The <input> will be filtered and any occurences of "[m]d<n>[~diff]" will be replaced by rolled dice numbers. [m] is optional and defaults to 1. [~diff] is difficulty and defaults to 6.
 
-Example:             "#{command} #{sample}"
-  might evaluate to  "#{substitute(sample.dup)}"
+Example:             "#{$COMMAND}#{command} #{sample}"
+  might evaluate to  "#{substitute(sample.dup,command)}"
 EOF
+  when 'nobotch'
+    sample = "No botches: 5d3~2"
+    <<-EOF
+Syntax: #{$COMMAND}#{command} <input>
+
+The <input> will be filtered and any occurences of "[m]d<n>[~diff]" will be replaced by rolled dice numbers. [m] is optional and defaults to 1. [~diff] is difficulty and defaults to 6. 1s will not count against your successes.
+
+Example:             "#{$COMMAND}#{command} #{sample}"
+  might evaluate to  "#{substitute(sample.dup,command)}"
+EOF
+  when 'special'
+    sample = "So many dice: 10d10"
+    <<-EOF
+Syntax: #{$COMMAND}#{command} <input>
+
+The <input> will be filtered and any occurences of "[m]d<n>[~diff]" will be replaced by rolled dice numbers. [m] is optional and defaults to 1. [~diff] is difficulty and defaults to 6. 10s count as double successes, use this when you have a speciality.
+
+Example:             "#{$COMMAND}#{command} #{sample}"
+  might evaluate to  "#{substitute(sample.dup,command)}"
+EOF
+  end
 end  
 
 class Die
@@ -39,11 +62,12 @@ class DFudge < Die
   end
 end
 
-def checkdice(dice,hard)
+def checkdice(dice,hard,command)
   wins = 0
   dice.each do |d|
     wins += 1  if d.to_i >= hard
-    wins -= 1  if d.to_i == 1 unless hard == 1
+    wins -= 1  if d.to_i == 1 unless (hard == 1 || command == 'nobotch')
+    wins += 1  if (d.to_i == 10 && command == 'special')
   end
   if wins > 1 || wins == 0
     "[#{wins} successes]"
@@ -56,7 +80,7 @@ def checkdice(dice,hard)
   end
 end
 
-def substitute(str)
+def substitute(str,command)
   str.gsub!(/(\d*)(d|D)(\d+)~?(\d+)?/) do |m|
     dice = []
     ($1.empty? ? 1 : $1.to_i).times do
@@ -64,10 +88,12 @@ def substitute(str)
       raise ArgumentError, "Too many dice/tokens. Maximum allowed: #{$MAX_DICE}." if (dice.length > $MAX_DICE) unless $NO_LIMITS
     end
     $4.nil? ? hard = 6 : hard = $4.to_i
-    successes = checkdice(dice,hard)
+    successes = checkdice(dice,hard,command)
     dice.push(successes)
     dice.join(" ")
   end
   str
 end
 
+## TODO: !nobotch to not count botches
+## TODO: !specialty to count 10s as double
